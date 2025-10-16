@@ -1,56 +1,52 @@
 import React, { useState } from 'react';
-import './App.css';
+import axios from 'axios';
 
-function App() {
-  const [city, setCity] = useState('');
-  const [weather, setWeather] = useState(null);
-  const [error, setError] = useState('');
+const App = () => {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [responseMessage, setResponseMessage] = useState('');
 
-  const getWeather = async () => {
-    if (!city) {
-      setError('Please enter a city name.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://wttr.in/${city}?format=j1`);
-      if (!response.ok) throw new Error('Failed to fetch weather');
-      const data = await response.json();
-
-      setWeather({
-        location: city,
-        tempC: data.current_condition[0].temp_C,
-        description: data.current_condition[0].weatherDesc[0].value,
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const newPost = { title, body };
+    axios
+      .post('https://jsonplaceholder.typicode.com/posts', newPost)
+      .then((response) => {
+        setResponseMessage('Post created successfully!');
+        setTitle('');
+        setBody('');
+        console.log(response.data); // you can also log the response if needed
+      })
+      .catch((err) => {
+        setResponseMessage('Error creating post');
+        console.error(err);
       });
-      setError('');
-    } catch (err) {
-      setError('Could not fetch weather data.');
-      setWeather(null);
-    }
   };
 
   return (
-    <div className="App">
-      <h1>Simple Weather App</h1>
-      <input
-        type="text"
-        placeholder="Enter city name"
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
-      />
-      <button onClick={getWeather}>Get Weather</button>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {weather && (
-        <div style={{ marginTop: '20px' }}>
-          <h2>Weather in {weather.location}</h2>
-          <p>Temperature: {weather.tempC}°C</p>
-          <p>Condition: {weather.description}</p>
-        </div>
-      )}
+    <div>
+      <h2>Create New Post</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Post Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+        <br />
+        <textarea
+          placeholder="Post Body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          required
+        />
+        <br />
+        <button type="submit">Create Post</button>
+      </form>
+      {responseMessage && <p>{responseMessage}</p>}
     </div>
   );
-}
+};
 
 export default App;
